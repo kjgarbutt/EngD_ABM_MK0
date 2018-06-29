@@ -6,15 +6,15 @@ import sim.field.network.Edge;
 import sim.util.Int2D;
 import sim.util.geo.MasonGeometry;
 
-class Refugee {
+class EngDAgent {
 	private int sex; // 0 male, 1 female
-	private RefugeeFamily family;
+	private NGOTeam team;
 	private Int2D location;
 	private int shiftStatus = 1; // default 1 (on shift), off shift = 0
 	
-	public Refugee (int sex, RefugeeFamily team) {
+	public EngDAgent (int sex, NGOTeam team) {
 		this.sex = sex;
-		this.family = family;
+		this.team = team;
 	}
 
 	public int getShiftStatus() {
@@ -39,12 +39,12 @@ class Refugee {
 		this.sex = sex;
 	}
 
-	public RefugeeFamily getFamily() {
-		return family;
+	public NGOTeam getTeam() {
+		return team;
 	}
 
-	public void setFamily(RefugeeFamily family) {
-		this.family = family;
+	public void setTeam(NGOTeam team) {
+		this.team = team;
 	}
 	
 }

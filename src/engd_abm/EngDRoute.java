@@ -14,12 +14,12 @@ public class EngDRoute {
 	private List<Int2D> locations;// list of places this person needs to go
 	private List<Edge> edges;
 	private double distance;
-	private City start;
-	private City end;
+	private LSOA start;
+	private LSOA end;
 	private double speed;
 
 	public EngDRoute(List<Int2D> locations, List<Edge> edges, double distance,
-			City start, City end, double speed) {
+			LSOA start, LSOA end, double speed) {
 		this.locations = locations;
 		this.edges = edges;
 		this.distance = distance;
@@ -28,8 +28,8 @@ public class EngDRoute {
 		this.speed = speed;
 	}
 
-	public EngDRoute(List<Int2D> locations, double distance, City start,
-			City end, double speed) {
+	public EngDRoute(List<Int2D> locations, double distance, LSOA start,
+			LSOA end, double speed) {
 		this.locations = locations;
 		// this.edges = edges;
 		this.distance = distance;
@@ -80,11 +80,11 @@ public class EngDRoute {
 		return edges.size();
 	}
 
-	public City getStart() {
+	public LSOA getStart() {
 		return start;
 	}
 
-	public City getEnd() {
+	public LSOA getEnd() {
 		return end;
 	}
 
@@ -98,7 +98,7 @@ public class EngDRoute {
 
 	public void printRoute() {
 		for (Edge e : edges) {
-			City c = (City) e.getTo();
+			LSOA c = (LSOA) e.getTo();
 			System.out.print(c.getName() + " ");
 		}
 	}

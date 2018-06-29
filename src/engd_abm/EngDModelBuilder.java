@@ -145,8 +145,8 @@ class EngDModelBuilder {
 		engdModelSim.flood2.setMBR(MBR);
 		engdModelSim.flood3.setMBR(MBR);
 		
-		makeCities(engdModelSim.cityPoints, engdModelSim.cityGrid,
-				engdModelSim.cities, engdModelSim.cityList);
+		makeCentroids(engdModelSim.cityPoints, engdModelSim.cityGrid,
+				engdModelSim.centroids, engdModelSim.centroidList);
 		
 		//createNetwork();
 		extractFromRoadLinks(engdModelSim.roadLinks, engdModelSim);
@@ -156,26 +156,26 @@ class EngDModelBuilder {
 		addAgents();
 	}
 
-	private static void printCities() {
-		for (Object city : engdModelSim.cities) {
-			City l = (City) city;
+	private static void printCentroids() {
+		for (Object centroid : engdModelSim.centroids) {
+			LSOA l = (LSOA) centroid;
 			System.out.format("LSOA Name: " + l.getName() + " Ref Pop: " 
 					+ l.getPopulation());
 			System.out.println("\n");
 		}
 	}
 
-	static void makeCities(GeomVectorField cities_vector, SparseGrid2D grid,
-			Bag addTo, Map<Integer, City> cityList) {
-		Bag cities = cities_vector.getGeometries();
-		Envelope e = cities_vector.getMBR();
+	static void makeCentroids(GeomVectorField centroids_vector, SparseGrid2D grid,
+			Bag addTo, Map<Integer, LSOA> centroidList) {
+		Bag centroids = centroids_vector.getGeometries();
+		Envelope e = centroids_vector.getMBR();
 		double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e
 				.getMaxY();
 		int xcols = engdModelSim.world_width - 1, ycols = engdModelSim.world_height - 1;
 		System.out.println("Reading in Cities");
-		for (int i = 0; i < cities.size(); i++) {
-			MasonGeometry cityinfo = (MasonGeometry) cities.objs[i];
-			Point point = cities_vector.getGeometryLocation(cityinfo);
+		for (int i = 0; i < centroids.size(); i++) {
+			MasonGeometry cityinfo = (MasonGeometry) centroids.objs[i];
+			Point point = centroids_vector.getGeometryLocation(cityinfo);
 			double x = point.getX(), y = point.getY();
 			int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)), yint = (int) (ycols - Math
 					.floor(ycols * (y - ymin) / (ymax - ymin)));
@@ -184,10 +184,10 @@ class EngDModelBuilder {
 			Int2D location = new Int2D(xint, yint);
 
 			//Lsoa lsoa = new Lsoa(location, ID, name);
-			City city = new City(location, ID, name);
-			addTo.add(city);
-			cityList.put(ID, city);
-			grid.setObjectLocation(city, location);
+			LSOA lsoa = new LSOA(location, ID, name);
+			addTo.add(lsoa);
+			centroidList.put(ID, lsoa);
+			grid.setObjectLocation(lsoa, location);
 		}
 	}
 
@@ -247,10 +247,10 @@ class EngDModelBuilder {
 			EngDRoadInfo edgeinfo = new EngDRoadInfo(gm.geometry, from, to, speed,
 					spop, distance, cost, transportlevel, deaths);
 			// build road network
-			engdModelSim.roadNetwork.addEdge(engdModelSim.cityList.get(from),
-					engdModelSim.cityList.get(to), edgeinfo);
-			engdModelSim.roadNetwork.addEdge(engdModelSim.cityList.get(to),
-					engdModelSim.cityList.get(from), edgeinfo);
+			engdModelSim.roadNetwork.addEdge(engdModelSim.centroidList.get(from),
+					engdModelSim.centroidList.get(to), edgeinfo);
+			engdModelSim.roadNetwork.addEdge(engdModelSim.centroidList.get(to),
+					engdModelSim.centroidList.get(from), edgeinfo);
 		}
 
 		// addRedirects();
@@ -258,20 +258,20 @@ class EngDModelBuilder {
 	
 	private static void addAgents() {
 		System.out.println("Adding Agents... ");
-		for (Object c : engdModelSim.cities) {
-			City lsoa = (City) c;
+		for (Object c : engdModelSim.centroids) {
+			LSOA lsoa = (LSOA) c;
 			if (lsoa.getID() == 1) {
 				int currentPop = 0;// 1,4,5,10,3,14,24
 				int maximumPop = EngDParameters.TOTAL_POP;
 				while (currentPop <= maximumPop) {
-					RefugeeFamily n = createNGOTeam(lsoa);
+					NGOTeam n = createNGOTeam(lsoa);
 					 System.out.println(n.getTeam().size());
-					engdModelSim.refugeeFamilies.add(n);
+					engdModelSim.agentTeams.add(n);
 					for (Object o : n.getTeam()) {
-						Refugee agent = (Refugee) o;
+						EngDAgent agent = (EngDAgent) o;
 						currentPop++;
 						lsoa.addMember(agent);
-						engdModelSim.refugees.add(agent);
+						engdModelSim.agents.add(agent);
 						Int2D loc = lsoa.getLocation();
 						double y_coord = (loc.y * EngDParameters.WORLD_TO_POP_SCALE)
 								+ (int) (engdModelSim.random.nextDouble() * EngDParameters.WORLD_TO_POP_SCALE);
@@ -307,11 +307,11 @@ class EngDModelBuilder {
 
 	}
 
-	private static RefugeeFamily createNGOTeam(City lsoa) {
+	private static NGOTeam createNGOTeam(LSOA lsoa) {
 		int teamSize = pickTeamSize();
 		double stockStatus = pick_stock_status(stock_dist, lsoa.getID()) * teamSize;
 
-		RefugeeFamily ngoTeam = new RefugeeFamily(lsoa.getLocation(), teamSize, lsoa);
+		NGOTeam ngoTeam = new NGOTeam(lsoa.getLocation(), teamSize, lsoa);
 		//EngDNGO ngoTeam = new EngDNGO(lsoa.getLocation(), teamSize, lsoa, stockStatus);
 		for (int i = 0; i < teamSize; i++) {
 			int sex;
@@ -319,7 +319,7 @@ class EngDModelBuilder {
 				sex = EngDConstants.MALE;
 			else
 				sex = EngDConstants.FEMALE;
-			Refugee agent = new Refugee(sex, ngoTeam);
+			EngDAgent agent = new EngDAgent(sex, ngoTeam);
 			ngoTeam.getTeam().add(agent);
 		}
 		return ngoTeam;

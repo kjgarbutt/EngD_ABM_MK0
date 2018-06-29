@@ -36,10 +36,10 @@ class EngDModel extends SimState {
 	public int total_scaled_pop = 0;
 	public long total_pop = 0;
 	
-	public Bag refugees;
-	public Bag refugeeFamilies;
-	public Bag cities = new Bag();
-	public Map<Integer, City> cityList = new HashMap<>();
+	public Bag agents;
+	public Bag agentTeams;
+	public Bag centroids = new Bag();
+	public Map<Integer, LSOA> centroidList = new HashMap<>();
 	
 	public EngDModel(long seed) {
 		super(seed);
@@ -47,8 +47,8 @@ class EngDModel extends SimState {
 	
 	public void start() {
 		super.start();
-		refugees = new Bag();
-		refugeeFamilies = new Bag();
+		agents = new Bag();
+		agentTeams = new Bag();
 		EngDModelBuilder.initializeWorld(this);
 	}
 	

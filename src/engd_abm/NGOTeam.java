@@ -14,29 +14,29 @@ import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 
-public class RefugeeFamily implements Steppable{
+public class NGOTeam implements Steppable{
 	private Int2D location;
-	private Bag familyMembers;
+	private Bag teamMembers;
 	private EngDRoute route;
 	private int routePosition;
 	private double stockStatus;
-	private City home;
+	private LSOA home;
 	private Edge currentEdge;
-	private City currentCity;
-	private City goal;
+	private LSOA currentCity;
+	private LSOA goal;
 	static MersenneTwisterFast random = new MersenneTwisterFast();
 	private boolean isMoving;
 	private HashMap<EngDRoute, Integer> cachedRoutes;
-	private HashMap<City, Integer> cachedGoals;
+	private HashMap<LSOA, Integer> cachedGoals;
 	private boolean goalChanged;
 	
-	public RefugeeFamily(Int2D location, int teamSize, City lsoa) {
+	public NGOTeam(Int2D location, int teamSize, LSOA lsoa) {
 	//public EngDNGO(Int2D location, int size, Lsoa lsoa, double stockStatus) {
 		this.location = location;
 		this.home = lsoa;
 		this.goal = lsoa;
 		//this.stockStatus = stockStatus;
-		familyMembers = new Bag();
+		teamMembers = new Bag();
 		currentCity = home;
 		isMoving = true;
 		// routePosition = 0;
@@ -48,8 +48,8 @@ public class RefugeeFamily implements Steppable{
 	public void step(SimState state) {
 		System.out.println();
 		EngDModel engdModelSim = (EngDModel) state;
-		Bag cities = engdModelSim.cities;
-		City goalCity = calcGoalLsoa(cities);
+		Bag cities = engdModelSim.centroids;
+		LSOA goalCity = calcGoalLsoa(cities);
 		
 		if (this.location == goalCity.location) {									// == 'Equal to'
 			goal = goalCity;
@@ -66,7 +66,7 @@ public class RefugeeFamily implements Steppable{
 				if (currentCity.getName() == goal.getName()							// == 'Equal to'
 						&& this.getLocation() != goal.getLocation()) { 				// && 'Conditional-AND'
 					System.out.println("-----HERE------");
-					currentCity = (City) currentEdge.to();
+					currentCity = (LSOA) currentEdge.to();
 				}
 				// setGoal(currentCity, goal);
 				route = calcRoute(currentCity, goal);								// Astar inside here
@@ -100,27 +100,27 @@ public class RefugeeFamily implements Steppable{
 					route.printRoute();
 				}
 
-				City lsoa = (City) currentEdge.getTo();
+				LSOA lsoa = (LSOA) currentEdge.getTo();
 				if (this.location.getX() == lsoa.getLocation().getX()				// == 'Equal to'
 						&& this.location.getY() == lsoa.getLocation().getY()) {		// == 'Equal to'
 					currentCity = home;
 					EngDRoadInfo einfo = (EngDRoadInfo) this.currentEdge.getInfo();
-					this.stockStatus -= (einfo.getCost() * this.familyMembers
+					this.stockStatus -= (einfo.getCost() * this.teamMembers
 							.size());
 							// finStatus = finStatus - einfo.getCost() * this.familyMembers
 							// if at the end of an edge, subtract the money
 					// city.addMembers(this.familyMembers);
-					for (Object or : this.familyMembers) {
-						Refugee rr = (Refugee) or;
+					for (Object or : this.teamMembers) {
+						EngDAgent rr = (EngDAgent) or;
 						lsoa.addMember(rr);
 					}
 				}
 
 				else {
 					for (Object l : cities) {
-						City cremove = (City) l;
-						for (Object o : this.familyMembers) {
-							Refugee r = (Refugee) o;
+						LSOA cremove = (LSOA) l;
+						for (Object o : this.teamMembers) {
+							EngDAgent r = (EngDAgent) o;
 							cremove.removeMember(r);
 						}
 					}
@@ -131,18 +131,18 @@ public class RefugeeFamily implements Steppable{
 		System.out.println(this.location.x + ", " + this.location.y);
 	}		
 	
-	public City calcGoalLsoa(Bag lsoalist) { // returns the best city
-		City bestLsoa = null;
+	public LSOA calcGoalLsoa(Bag lsoalist) { // returns the best city
+		LSOA bestLsoa = null;
 		double max = 0.0;
 		for (Object lsoa : lsoalist) {
-			City l = (City) lsoa;
+			LSOA l = (LSOA) lsoa;
 			double lsoaDesirability = dangerCare() 
 					//* l.getViolence()			// dangerCare calculated below 
 					//+ 2 * NGOHQ.getTeamPresence()
 					//+ l.getEconomy() * (EngDParameters.ECON_CARE + random.nextDouble() / 4)
 					+ l.getScaledPopulation() * (EngDParameters.POP_CARE + random.nextDouble() / 4);
 			//if (l.getAgentPopulation() + 
-			if	(familyMembers.size() >= l.getQuota()) // if reached quota, desirability is 0
+			if	(teamMembers.size() >= l.getQuota()) // if reached quota, desirability is 0
 				lsoaDesirability = 0;
 			if (lsoaDesirability > max) {
 				max = lsoaDesirability;
@@ -153,11 +153,11 @@ public class RefugeeFamily implements Steppable{
 		return bestLsoa;
 	}
 	
-	private void setGoal(City from, City to) {
+	private void setGoal(LSOA from, LSOA to) {
 		this.goal = to;
 	}
 	
-	private EngDRoute calcRoute(City from, City to) {
+	private EngDRoute calcRoute(LSOA from, LSOA to) {
 		EngDRoute newRoute = from.getRoute(to, this);
 
 		if (goalChanged)
@@ -170,7 +170,7 @@ public class RefugeeFamily implements Steppable{
 		// migrationSim.world.setObjectLocation(this.getFamily(), new
 		// Double2D(location.getX() , location.getY() ));
 		for (Object o : this.getTeam()) {
-			Refugee r = (Refugee) o;
+			EngDAgent r = (EngDAgent) o;
 			double randX = 0;// migrationSim.random.nextDouble() * 0.3;
 			double randY = 0;// migrationSim.random.nextDouble() * 0.3;
 			// System.out.println("Location: " + location.getX() + " " +
@@ -185,8 +185,8 @@ public class RefugeeFamily implements Steppable{
 	
 	public double dangerCare() {// 0-1, young, old, or has family weighted more
 		double dangerCare = 0.5;
-		for (Object o : this.familyMembers) {
-			Refugee e = (Refugee) o;
+		for (Object o : this.teamMembers) {
+			EngDAgent e = (EngDAgent) o;
 			if (e.getSex() <= 1 || e.getSex() <= 0) {	//if refugee is under 12 OR over 60
 				dangerCare += EngDParameters.DANGER_CARE_WEIGHT
 						* random.nextDouble();
@@ -203,8 +203,8 @@ public class RefugeeFamily implements Steppable{
 
 	public void setLocation(Int2D location) {
 		this.location = location;
-		for (Object o : this.familyMembers) {
-			Refugee r = (Refugee) o;
+		for (Object o : this.teamMembers) {
+			EngDAgent r = (EngDAgent) o;
 			r.setLocation(location);
 		}
 	}
@@ -217,28 +217,28 @@ public class RefugeeFamily implements Steppable{
 		this.stockStatus = stockStatus;
 	}
 	
-	public City getGoal() {
+	public LSOA getGoal() {
 		return goal;
 	}
 
-	public void setGoal(City goal) {
+	public void setGoal(LSOA goal) {
 		this.goal = goal;
 	}
 
-	public City getHome() {
+	public LSOA getHome() {
 		return home;
 	}
 
-	public void setCurrent(City current) {
+	public void setCurrent(LSOA current) {
 		this.currentCity = current;
 	}
 
 	public Bag getTeam() {
-		return familyMembers;
+		return teamMembers;
 	}
 
 	public void setTeam(Bag team) {
-		this.familyMembers = team;
+		this.teamMembers = team;
 	}
 	
 }

@@ -34,7 +34,7 @@ public class EngDAStar {
 	public static Network roadNetwork = EngDModelBuilder.engdModelSim.roadNetwork;
 	public static MersenneTwisterFast random = new MersenneTwisterFast();
 
-	static public EngDRoute astarPath(City start, City to, RefugeeFamily team) {
+	static public EngDRoute astarPath(LSOA start, LSOA to, NGOTeam team) {
 		// initial check - same as Gridlock
 		long startTime = System.currentTimeMillis();
 		if (start == null || to == null) {
@@ -44,7 +44,7 @@ public class EngDAStar {
 		
 		//Following in EngD:
 		//ArrayList<GeomPlanarGraphDirectedEdge> result = new ArrayList<GeomPlanarGraphDirectedEdge>();
-		HashMap<City, AStarNodeWrapper> foundCentroids = new HashMap<City, AStarNodeWrapper>();
+		HashMap<LSOA, AStarNodeWrapper> foundCentroids = new HashMap<LSOA, AStarNodeWrapper>();
 		//HashMap<Node, AStarNodeWrapper> foundNodes = new HashMap<Node, AStarNodeWrapper>();
 		
 		AStarNodeWrapper startCentroid = new AStarNodeWrapper(start);
@@ -91,9 +91,9 @@ public class EngDAStar {
 			Bag edges = roadNetwork.getEdgesOut(x.lsoa);
 			for (Object l : edges) {
 				Edge e = (Edge) l;
-				City n = (City) e.from();
+				LSOA n = (LSOA) e.from();
  				if (n == x.lsoa)
-					n = (City) e.to();
+					n = (LSOA) e.to();
 
 				// get the A* meta information about this City
 				AStarNodeWrapper nextCentroid;	//AStarNodeWrapper nextNode;
@@ -154,7 +154,7 @@ public class EngDAStar {
 	 * @return an Route from start to goal
 	 */
 	static EngDRoute reconstructRoute(AStarNodeWrapper n, AStarNodeWrapper start, AStarNodeWrapper end,
-			RefugeeFamily team) {
+			NGOTeam team) {
 		//In EngD: new ArrayList<GeomPlanarGraphDirectedEdge>();
 		List<Int2D> locations = new ArrayList<Int2D>(100);
 		List<Edge> edges = new ArrayList<Edge>(100);
@@ -232,7 +232,7 @@ public class EngDAStar {
      * @param y
 	 * @return notional "distance" between the given allRoadCities.
 	 */
-	static double heuristic(City x, City y) {
+	static double heuristic(LSOA x, LSOA y) {
 		return x.location.distance(y.location) * EngDParameters.HEU_WEIGHT;
 	}
 	
@@ -262,12 +262,12 @@ public class EngDAStar {
 	 */
 	static class AStarNodeWrapper implements Comparable<AStarNodeWrapper> {
 		// the underlying City associated with the metainformation
-		City lsoa;	//Node node;
+		LSOA lsoa;	//Node node;
 		// the City from which this City was most profitably linked
 		AStarNodeWrapper cameFrom;	//edgeFrom;
 		double gx, hx, fx;
 
-		public AStarNodeWrapper(City n) { //public AStarNodeWrapper(Node n)	{
+		public AStarNodeWrapper(LSOA n) { //public AStarNodeWrapper(Node n)	{
 			lsoa = n;	//node = n;
 			gx = 0;
 			hx = 0;

@@ -10,7 +10,7 @@ class NGOHQ {
 	private int ngoQuota; // 1
 	private int ngoID;
 	private double ngoTeamPresence; // 2
-	private HashSet<RefugeeFamily> ngoagents;
+	private HashSet<NGOTeam> ngoagents;
 	private int ngoDepartures;
 	private int ngoArrivals;
 
@@ -22,7 +22,7 @@ class NGOHQ {
 		this.ngoID = ngoid;
 		this.ngoQuota = ngoquota;
 		this.ngoTeamPresence = ngoTeamPresence;
-		this.ngoagents = new HashSet<RefugeeFamily>();
+		this.ngoagents = new HashSet<NGOTeam>();
 		this.ngoDepartures = 0;
 	}
 
@@ -39,7 +39,7 @@ class NGOHQ {
 		return ngoagents.size();
 	}
 
-	public HashSet<RefugeeFamily> getAgents() {
+	public HashSet<NGOTeam> getAgents() {
 		return ngoagents;
 	}
 
@@ -75,12 +75,12 @@ class NGOHQ {
 		this.ngoTeamPresence = ngoTeamPresence;
 	}
 
-	public void addNGOTeam(RefugeeFamily r) {
+	public void addNGOTeam(NGOTeam r) {
 		ngoagents.add(r);
 		ngoArrivals++;
 	}
 
-	public void removeNGOTeam(RefugeeFamily r){
+	public void removeNGOTeam(NGOTeam r){
 		if (ngoagents.remove(r))
 			ngoDepartures ++;
 	}

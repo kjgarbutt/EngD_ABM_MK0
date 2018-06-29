@@ -5,7 +5,7 @@ import java.util.Map;
 
 import sim.util.Int2D;
 
-class City {
+class LSOA {
 	Int2D location;
 	String name;
 	private int quota; // 1
@@ -16,15 +16,15 @@ class City {
 	private double violence; // 2
 	private double economy; // 3
 	private double familyPresence; // 2
-	private HashSet<Refugee> refugees;
+	private HashSet<EngDAgent> refugees;
 	private int departures;
 	private int arrivals;
 
 	// need name, get name, set name
-	protected HashMap<City, EngDRoute> cachedPaths;
+	protected HashMap<LSOA, EngDRoute> cachedPaths;
 
 	//public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {
-	public City(Int2D location, int ID, String name) {
+	public LSOA(Int2D location, int ID, String name) {
 		this.name = name;
 		this.location = location;
 		this.ID = ID;
@@ -35,7 +35,7 @@ class City {
 		this.economy = economy;
 		this.familyPresence = familyPresence;
 		this.origin = origin;
-		this.refugees = new HashSet<Refugee>();
+		this.refugees = new HashSet<EngDAgent>();
 		this.departures = 0;
 	}
 
@@ -75,7 +75,7 @@ class City {
 		return refugees.size();
 	}
 
-	public HashSet<Refugee> getAgents() {
+	public HashSet<EngDAgent> getAgents() {
 		return refugees;
 	}
 
@@ -116,7 +116,7 @@ class City {
 		refugees.addAll(people);
 	}*/
 
-	public void addMember(Refugee r) {
+	public void addMember(EngDAgent r) {
 		refugees.add(r);
 		arrivals++;
 	}
@@ -126,20 +126,20 @@ class City {
 		passerbyCount += people.size();
 	}*/
 
-	public void removeMember(Refugee r){
+	public void removeMember(EngDAgent r){
 		if (refugees.remove(r))
 			departures ++;
 	}
 
-	public void cacheRoute(EngDRoute route, City destination) {
+	public void cacheRoute(EngDRoute route, LSOA destination) {
 		cachedPaths.put(destination, route);
 	}
 
-	public Map<City, EngDRoute> getCachedRoutes() {
+	public Map<LSOA, EngDRoute> getCachedRoutes() {
 		return cachedPaths;
 	}
 
-	public EngDRoute getRoute(City destination, RefugeeFamily team) {
+	public EngDRoute getRoute(LSOA destination, NGOTeam team) {
 		EngDRoute route;
 
 		route = EngDAStar.astarPath(this, destination, team);
