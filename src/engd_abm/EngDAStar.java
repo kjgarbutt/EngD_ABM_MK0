@@ -24,7 +24,7 @@ import ec.util.MersenneTwisterFast;
 public class EngDAStar {
 
 	/**
-	 * Assumes that both the start and end location are Cities as opposed to
+	 * Assumes that both the start and end location are Centroids as opposed to
 	 * LOCATIONS
 	 * 
 	 * @param start
@@ -40,7 +40,7 @@ public class EngDAStar {
 		if (start == null || to == null) {
 			System.out.println("Error: invalid City provided to AStar");
 		}
-		// containers for the metainformation about the Cities relative to the A* search
+		// containers for the metainformation about the Centroids relative to the A* search
 		
 		//Following in EngD:
 		//ArrayList<GeomPlanarGraphDirectedEdge> result = new ArrayList<GeomPlanarGraphDirectedEdge>();
@@ -58,7 +58,7 @@ public class EngDAStar {
 		startCentroid.hx = heuristic(start, to); 
 		startCentroid.fx = heuristic(start, to);
 
-		// A* containers: allRoadCities to be investigated, allRoadCities that have been investigated
+		// A* containers: allRoadNodes to be investigated, allRoadNodes that have been investigated
 		/* Following in EngD:
 		 	ArrayList<AStarNodeWrapper> closedSet = new ArrayList<AStarNodeWrapper>(),
 	            openSet = new ArrayList<AStarNodeWrapper>();
@@ -114,7 +114,7 @@ public class EngDAStar {
 						+ edge.getSpeed() * EngDParameters.SPEED_WEIGHT - edge.getScaledPopulation() * EngDParameters.POP_WEIGHT
 						+ edge.getScaledCost() * EngDParameters.COST_WEIGHT
 						+ edge.getTransportLevel() * EngDParameters.TRANSPORT_LEVEL_WEIGHT
-						+ edge.getDeaths() * EngDParameters.RISK_WEIGHT * team.dangerCare();
+						+ edge.getDeaths() * EngDParameters.RISK_WEIGHT * team.vulnerableCare();
 				// edgeweight = getWeightedDistance * 0.1
 				//+ 1 * 0.1 -
 				
@@ -148,7 +148,7 @@ public class EngDAStar {
 	}
 
 	/**
-	 * Takes the information about the given City n and returns the path that
+	 * Takes the information about the given Centroid n and returns the path that
 	 * found it.
 	 * @param n the end point of the path
 	 * @return an Route from start to goal

@@ -10,13 +10,8 @@ class LSOA {
 	String name;
 	private int quota; // 1
 	private int ID;
-	private int origin;
-	private double scaledPop;
 	private int pop;
-	private double violence; // 2
-	private double economy; // 3
-	private double familyPresence; // 2
-	private HashSet<EngDAgent> refugees;
+	private HashSet<EngDAgent> agent;
 	private int departures;
 	private int arrivals;
 
@@ -24,18 +19,12 @@ class LSOA {
 	protected HashMap<LSOA, EngDRoute> cachedPaths;
 
 	//public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {
-	public LSOA(Int2D location, int ID, String name) {
+	public LSOA(Int2D location, int ID, String name, int pop) {
 		this.name = name;
 		this.location = location;
 		this.ID = ID;
-		this.scaledPop = scaledPop;
 		this.pop = pop;
-		this.quota = quota;
-		this.violence = violence;
-		this.economy = economy;
-		this.familyPresence = familyPresence;
-		this.origin = origin;
-		this.refugees = new HashSet<EngDAgent>();
+		this.agent = new HashSet<EngDAgent>();
 		this.departures = 0;
 	}
 
@@ -47,14 +36,6 @@ class LSOA {
 		this.location = location;
 	}
 
-	public int getOrigin() {
-		return origin;
-	}
-
-	public void setOrigin(int origin) {
-		this.origin = origin;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -63,20 +44,16 @@ class LSOA {
 		this.name = name;
 	}
 
-	public double getScaledPopulation() {
-		return scaledPop;
-	}
-
 	public double getPopulation() {
 		return pop;
 	}
 
 	public int getAgentPopulation() {
-		return refugees.size();
+		return agent.size();
 	}
 
 	public HashSet<EngDAgent> getAgents() {
-		return refugees;
+		return agent;
 	}
 
 	public int getQuota() {
@@ -104,20 +81,12 @@ class LSOA {
 		return arrivals;
 	}
 
-	public double getTeamPresence() {
-		return familyPresence;
-	}
-	
-	public void setTeamPresence(double teamPresence) {
-		this.familyPresence = teamPresence;
-	}
-
 	/*public void addMembers(Bag people) {
 		refugees.addAll(people);
 	}*/
 
 	public void addMember(EngDAgent r) {
-		refugees.add(r);
+		agent.add(r);
 		arrivals++;
 	}
 
@@ -127,7 +96,7 @@ class LSOA {
 	}*/
 
 	public void removeMember(EngDAgent r){
-		if (refugees.remove(r))
+		if (agent.remove(r))
 			departures ++;
 	}
 
@@ -149,7 +118,7 @@ class LSOA {
 	}
 
 	public double getScale(){
-		return refugees.size() * 1.0 / (EngDParameters.TOTAL_POP);
+		return agent.size() * 1.0 / (EngDParameters.TOTAL_POP);
 	}
 
 }

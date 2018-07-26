@@ -48,7 +48,7 @@ public class NGOTeam implements Steppable{
 	public void step(SimState state) {
 		System.out.println();
 		EngDModel engdModelSim = (EngDModel) state;
-		Bag cities = engdModelSim.centroids;
+		Bag cities = engdModelSim.lsoacentroids;
 		LSOA goalCity = calcGoalLsoa(cities);
 		
 		if (this.location == goalCity.location) {									// == 'Equal to'
@@ -136,11 +136,11 @@ public class NGOTeam implements Steppable{
 		double max = 0.0;
 		for (Object lsoa : lsoalist) {
 			LSOA l = (LSOA) lsoa;
-			double lsoaDesirability = dangerCare() 
+			double lsoaDesirability = vulnerableCare() 
 					//* l.getViolence()			// dangerCare calculated below 
 					//+ 2 * NGOHQ.getTeamPresence()
 					//+ l.getEconomy() * (EngDParameters.ECON_CARE + random.nextDouble() / 4)
-					+ l.getScaledPopulation() * (EngDParameters.POP_CARE + random.nextDouble() / 4);
+					+ l.getAgentPopulation() * (EngDParameters.POP_CARE + random.nextDouble() / 4);
 			//if (l.getAgentPopulation() + 
 			if	(teamMembers.size() >= l.getQuota()) // if reached quota, desirability is 0
 				lsoaDesirability = 0;
@@ -183,11 +183,11 @@ public class NGOTeam implements Steppable{
 		}
 	}
 	
-	public double dangerCare() {// 0-1, young, old, or has family weighted more
+	public double vulnerableCare() {// 0-1, young, old, or has family weighted more
 		double dangerCare = 0.5;
 		for (Object o : this.teamMembers) {
 			EngDAgent e = (EngDAgent) o;
-			if (e.getSex() <= 1 || e.getSex() <= 0) {	//if refugee is under 12 OR over 60
+			if (e.getSex() <= 1 || e.getSex() <= 0) {
 				dangerCare += EngDParameters.DANGER_CARE_WEIGHT
 						* random.nextDouble();
 				// adds Parameters.DANGER_CARE_WEIGHT * random.nextDouble() to

@@ -39,20 +39,20 @@ class EngDParameters {
 
 	public static double WALKING_SPEED = 5.1;// km per hour
 	
-	public static String REGION_SHP = "data/GloucestershireFinal_LSOA.shp";
-	public static String COUNTRY_SHP = "data/Gloucestershire_Boundary.shp";
-	public static String CITY_SHP = "data/Gloucestershire_Centroids_MultipartToSinglepart.shp";
+	public static String LSOA_SHP = "data/GloucestershireFinal_LSOA.shp";
+	public static String BOUNDARY_SHP = "data/Gloucestershire_Boundary.shp";
+	public static String CENTROIDS_SHP = "data/Gloucestershire_Centroids_Singlepart.shp";
 	public static String ROAD_SHP = "data/GL_ITN_MultipartToSinglepart.shp";
-	public static String ROADLINK_SHP = "data/GL_ITN_MultipartToSinglepart.shp";
-	
 	public static String FLOOD2_SHP = "data/Gloucestershire_FZ_2.shp";
 	public static String FLOOD3_SHP = "data/Gloucestershire_FZ_3.shp";
+	//public static String ROADLINK_SHP = "data/GL_ITN_MultipartToSinglepart.shp";
+	//public static String ROADS_COST_PATH = "data/road_cost.dat";//Path to cost distance data for all allRoadNodes in the network
+	//public static String CITY_SHP = "data/city.shp";
 	//public static String CITY_SHP = "data/Gloucestershire_Centroids_MultipartToSinglepart.shp";
-	
-	//public static String ROADLINK_SHP = "data/routes5.shp";
-	//public static String AGE_DIST = "data/age_dist2.csv";
-	//public static String POP_DIST = "data/pop_dist.csv";
-	//public static String FIN_DIST = "data/fin_dist.csv";
+		
+	public static String AGE_DIST = "data/age_dist2.csv";
+	public static String POP_DIST = "data/pop_dist.csv";
+	public static String FIN_DIST = "data/fin_dist.csv";
 	
 	public static double convertToKilometers(double val) {
 		return (val * (EngDParameters.POP_BLOCK_METERS / EngDParameters.WORLD_TO_POP_SCALE)) / 1000.0;

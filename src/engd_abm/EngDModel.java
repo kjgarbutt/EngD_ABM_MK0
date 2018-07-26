@@ -8,6 +8,7 @@ import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
+import sim.field.grid.DoubleGrid2D;
 import sim.field.grid.SparseGrid2D;
 import sim.field.network.Network;
 import sim.util.Bag;
@@ -15,19 +16,21 @@ import sim.util.Bag;
 class EngDModel extends SimState {
 	
 	public Continuous2D world;
+	
 	public SparseGrid2D cityGrid;
 	public Network roadNetwork = new Network();
-	public GeomVectorField regions;
-	public GeomVectorField countries;
-	public GeomVectorField roads;
-	public GeomVectorField roadLinks;
-	public GeomVectorField cityPoints;
+	public GeomVectorField centroids;
+	public GeomVectorField boundary;
+	public GeomVectorField lsoa;
+	public static GeomVectorField roads;
 	public GeomVectorField flood2;
 	public GeomVectorField flood3;
+	public GeomVectorField cityPoints;
 	
-	public GeomVectorField adminBoundaries;
-	public GeomVectorField osvi;
-	public SparseGrid2D allRoadNodes;
+	//public GeomVectorField adminBoundaries;
+	//public GeomVectorField osvi;
+	//public SparseGrid2D allRoadNodes;
+	public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
 	
 	public int pop_width;
 	public int pop_height;
@@ -38,8 +41,8 @@ class EngDModel extends SimState {
 	
 	public Bag agents;
 	public Bag agentTeams;
-	public Bag centroids = new Bag();
-	public Map<Integer, LSOA> centroidList = new HashMap<>();
+	public Bag lsoacentroids = new Bag();
+	public Map<Integer, LSOA> cityList = new HashMap<>();
 	
 	public EngDModel(long seed) {
 		super(seed);
