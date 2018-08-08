@@ -5,6 +5,7 @@ import java.util.List;
 
 import sim.field.network.Edge;
 import sim.util.Int2D;
+import sim.util.geo.MasonGeometry;
 
 /**
  * This class is a wrapper class for an ArrayList that manages a locations and
@@ -14,12 +15,12 @@ public class EngDRoute {
 	private List<Int2D> locations;// list of places this person needs to go
 	private List<Edge> edges;
 	private double distance;
-	private LSOA start;
-	private LSOA end;
+	private EngDCentroid start;
+	private EngDCentroid end;
 	private double speed;
 
 	public EngDRoute(List<Int2D> locations, List<Edge> edges, double distance,
-			LSOA start, LSOA end, double speed) {
+			EngDCentroid start, EngDCentroid end, double speed) {
 		this.locations = locations;
 		this.edges = edges;
 		this.distance = distance;
@@ -28,8 +29,8 @@ public class EngDRoute {
 		this.speed = speed;
 	}
 
-	public EngDRoute(List<Int2D> locations, double distance, LSOA start,
-			LSOA end, double speed) {
+	public EngDRoute(List<Int2D> locations, double distance, EngDCentroid start,
+			EngDCentroid end, double speed) {
 		this.locations = locations;
 		// this.edges = edges;
 		this.distance = distance;
@@ -60,8 +61,8 @@ public class EngDRoute {
 		return edge;
 	}
 
-	public int getLocIndex(Int2D loc) {
-		return locations.lastIndexOf(loc);
+	public int getLocIndex(Int2D location) {
+		return locations.lastIndexOf(location);
 	}
 
 	public int getEdgeIndex(EngDRoadInfo edge) {
@@ -80,11 +81,11 @@ public class EngDRoute {
 		return edges.size();
 	}
 
-	public LSOA getStart() {
+	public EngDCentroid getStart() {
 		return start;
 	}
 
-	public LSOA getEnd() {
+	public EngDCentroid getEnd() {
 		return end;
 	}
 
@@ -98,7 +99,7 @@ public class EngDRoute {
 
 	public void printRoute() {
 		for (Edge e : edges) {
-			LSOA c = (LSOA) e.getTo();
+			EngDCentroid c = (EngDCentroid) e.getTo();
 			System.out.print(c.getName() + " ");
 		}
 	}

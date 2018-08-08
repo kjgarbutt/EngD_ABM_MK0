@@ -15,8 +15,8 @@ import sim.util.Double2D;
 import sim.util.Int2D;
 import sim.util.geo.MasonGeometry;
 
-public class NGOTeam implements Steppable{
-	private Int2D location;
+public class NewNGOTeam implements Steppable{
+	private MasonGeometry location;
 	private Bag teamMembers;
 	private EngDRoute route;
 	private int routePosition;
@@ -31,7 +31,7 @@ public class NGOTeam implements Steppable{
 	private HashMap<EngDCentroid, Integer> cachedGoals;
 	private boolean goalChanged;
 	
-	public NGOTeam(Int2D location, int teamSize, EngDCentroid engdCentroid) {
+	public NewNGOTeam(MasonGeometry location, int teamSize, EngDCentroid engdCentroid) {
 	//public EngDNGO(Int2D location, int size, Lsoa lsoa, double stockStatus) {
 		this.location = location;
 		this.home = engdCentroid;
@@ -95,7 +95,7 @@ public class NGOTeam implements Steppable{
 				if (this.stockStatus - edgeinfo.getCost() < 0) {
 					isMoving = false;
 				} else {
-					Int2D nextStep = route.getLocation(newIndex);
+					MasonGeometry nextStep = route.getLocation(newIndex);
 					this.setLocation(nextStep);
 					updatePositionOnMap(engdModelSim);
 					// System.out.println(route.getNumSteps() + ", " +
@@ -202,11 +202,11 @@ public class NGOTeam implements Steppable{
 		return dangerCare;
 	}
 	
-	public Int2D getLocation() {
+	public MasonGeometry getLocation() {
 		return location;
 	}
 
-	public void setLocation(Int2D location) {
+	public void setLocation(MasonGeometry location) {
 		this.location = location;
 		for (Object o : this.teamMembers) {
 			EngDAgent r = (EngDAgent) o;

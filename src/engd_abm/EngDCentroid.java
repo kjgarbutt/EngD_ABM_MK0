@@ -4,8 +4,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 import sim.util.Int2D;
+import sim.util.geo.MasonGeometry;
 
-class LSOA {
+class EngDCentroid {
 	Int2D location;
 	String name;
 	private int quota; // 1
@@ -16,10 +17,10 @@ class LSOA {
 	private int arrivals;
 
 	// need name, get name, set name
-	protected HashMap<LSOA, EngDRoute> cachedPaths;
+	protected HashMap<EngDCentroid, EngDRoute> cachedPaths;
 
 	//public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {public Lsoa(Int2D location, int ID, String name, int origin, double scaledPop, int pop, int quota) {
-	public LSOA(Int2D location, int ID, String name, int pop) {
+	public EngDCentroid(Int2D location, int ID, String name, int pop) {
 		this.name = name;
 		this.location = location;
 		this.ID = ID;
@@ -100,15 +101,15 @@ class LSOA {
 			departures ++;
 	}
 
-	public void cacheRoute(EngDRoute route, LSOA destination) {
+	public void cacheRoute(EngDRoute route, EngDCentroid destination) {
 		cachedPaths.put(destination, route);
 	}
 
-	public Map<LSOA, EngDRoute> getCachedRoutes() {
+	public Map<EngDCentroid, EngDRoute> getCachedRoutes() {
 		return cachedPaths;
 	}
 
-	public EngDRoute getRoute(LSOA destination, NGOTeam team) {
+	public EngDRoute getRoute(EngDCentroid destination, NGOTeam team) {
 		EngDRoute route;
 
 		route = EngDAStar.astarPath(this, destination, team);

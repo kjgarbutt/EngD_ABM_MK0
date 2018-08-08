@@ -1,9 +1,11 @@
 package engd_abm;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 
@@ -26,12 +29,18 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.planargraph.Node;
 
-import ebola.Parameters;
-import ebola.ebolaData.EbolaData;
+import sim.engine.SimState;
+import sim.engine.*;
+import sim.util.*;
+import sim.field.continuous.*;
 import net.sf.csv4j.CSVReader;
+import refugee.refugeeData.RefugeeData;
 import ec.util.MersenneTwisterFast;
 import sim.app.antsforage.Ant;
+import sim.app.flockers.Flocker;
+import sim.app.pacman.Blinky;
 import sim.engine.Schedule;
+import sim.engine.Steppable;
 import sim.field.continuous.Continuous2D;
 import sim.field.geo.GeomVectorField;
 import sim.field.grid.DoubleGrid2D;
@@ -59,10 +68,10 @@ class EngDModelBuilder {
 	public static GeomVectorField agents = new GeomVectorField();
 
 	static ArrayList<EngDAgent> agentList = new ArrayList<EngDAgent>();
-
-	private static ArrayList<String> csvData = new ArrayList<String>();
+	ArrayList<String> csvData = new ArrayList<String>();
 
 	public int numTeams = 12;
+	public static int numAgents = 10;
 	public MersenneTwisterFast random;
 
 	public static void initializeWorld(EngDModel sim) {
@@ -74,7 +83,7 @@ class EngDModelBuilder {
 		String[] boundaryAttributes = { "NAME", "AREA_CODE", "DESCRIPTIO", "FILE_NAME", "NUMBER", "NUMBER0",
 				"POLYGON_ID", "UNIT_ID", "CODE", "HECTARES", "AREA", "TYPE_CODE", "DESCRIPT0", "TYPE_COD0",
 				"DESCRIPT1" };
-		String[] cityAttributes = { "objectid", "lsoa11cd", "lsoa11nm", "NAME", "AREA_CODE", "DESCRIPTIO", "FILE_NAME",
+		String[] centroidAttributes = { "objectid", "lsoa11cd", "lsoa11nm", "NAME", "AREA_CODE", "DESCRIPTIO", "FILE_NAME",
 				"NUMBER", "NUMBER0", "POLYGON_ID", "UNIT_ID", "CODE", "HECTARES", "AREA", "TYPE_CODE", "DESCRIPT0",
 				"TYPE_COD0", "DESCRIPT1", "OID_", "GOR_NAME", "GOR_CODE", "LTA_NAME", "MSOA_NAME", "MSOA_CODE",
 				"LA_NAME", "LA_CODE", "LSOA_NAME", "LSOA_CODE", "Name_1", "ALL_RES_C", "MALES_C", "MALES_P", "FEM_C",
@@ -97,8 +106,8 @@ class EngDModelBuilder {
 		Bag boundaryAtt = new Bag(boundaryAttributes);
 		System.out.println("	Boundary shapefile: " + EngDParameters.BOUNDARY_SHP);
 
-		engdModelSim.cityPoints = new GeomVectorField(sim.world_width, sim.world_height);
-		Bag lsoaAtt = new Bag(cityAttributes);
+		engdModelSim.centroidPoints = new GeomVectorField(sim.world_width, sim.world_height);
+		Bag centroidAtt = new Bag(centroidAttributes);
 		System.out.println("	Centroids shapefile: " + EngDParameters.CENTROIDS_SHP);
 
 		engdModelSim.cityGrid = new SparseGrid2D(sim.world_width, sim.world_height);
@@ -108,7 +117,7 @@ class EngDModelBuilder {
 		System.out.println("	Roads shapefile: " + EngDParameters.ROAD_SHP);
 
 		engdModelSim.lsoa = new GeomVectorField(sim.world_width, sim.world_height);
-		Bag osviAtt = new Bag(lsoaAttributes);
+		Bag lsoaAtt = new Bag(lsoaAttributes);
 		System.out.println("	LSOA shapefile: " + EngDParameters.LSOA_SHP);
 
 		engdModelSim.flood2 = new GeomVectorField(sim.world_width, sim.world_height);
@@ -123,16 +132,16 @@ class EngDModelBuilder {
 
 		String[] shapeFiles = { EngDParameters.BOUNDARY_SHP, EngDParameters.CENTROIDS_SHP, EngDParameters.ROAD_SHP,
 				EngDParameters.LSOA_SHP, EngDParameters.FLOOD2_SHP, EngDParameters.FLOOD3_SHP };
-		Bag[] attfiles = { boundaryAtt, lsoaAtt, roadAtt, osviAtt, flood2Att, flood3Att };
-		GeomVectorField[] vectorFields = { engdModelSim.boundary, engdModelSim.cityPoints, EngDModel.roads,
+		Bag[] attFiles = { boundaryAtt, centroidAtt, roadAtt, lsoaAtt, flood2Att, flood3Att };
+		GeomVectorField[] vectorFields = { engdModelSim.boundary, engdModelSim.centroidPoints, EngDModel.roads,
 				engdModelSim.lsoa, engdModelSim.flood2, engdModelSim.flood3 };
 		SparseGrid2D[] gridFields = { engdModelSim.cityGrid };
 
-		readInShapefile(shapeFiles, attfiles, vectorFields, gridFields);
+		readInShapefile(shapeFiles, attFiles, vectorFields, gridFields);
 
 		Envelope MBR = engdModelSim.boundary.getMBR();
-		// MBR.expandToInclude(engdModelSim.boundary.getMBR());
 		MBR.expandToInclude(EngDModel.roads.getMBR());
+		// MBR.expandToInclude(engdModelSim.boundary.getMBR());
 		// MBR.expandToInclude(engdModelSim.flood2.getMBR());
 		// MBR.expandToInclude(engdModelSim.flood3.getMBR());
 
@@ -140,55 +149,62 @@ class EngDModelBuilder {
 		EngDModel.roads.setMBR(MBR);
 		engdModelSim.flood2.setMBR(MBR);
 		engdModelSim.flood3.setMBR(MBR);
-		engdModelSim.cityPoints.setMBR(MBR);
+		engdModelSim.centroidPoints.setMBR(MBR);
 
 		// System.out.print("Reading in road_cost ");
 		// readInRoadCost();
 		// printCentroids();
-
-		makeCentroids(engdModelSim.cityPoints, engdModelSim.cityGrid, engdModelSim.lsoacentroids,
+		makeCentroids(engdModelSim.centroidPoints, engdModelSim.cityGrid, engdModelSim.lsoacentroids,
 				engdModelSim.cityList);
 
 		createNetwork();
-		// extractFromRoadLinks(engdModelSim.roadLinks, engdModelSim);
+		/*
+		 * try { setUpAgentGoals(EngDParameters.GOALS_CSV);
+		 * //agentGoals("data/AgentGoals.csv"); } catch (IOException e) {
+		 * e.printStackTrace(); }
+		 */
+		// createNewNGOTeam();
 
-		// createNGOTeam(null);
+		createNewNGOAgents();
 
-		createNGOAgents();
+		// createNGOAgents();
 	}
 
 	private static void printCentroids() {
-		System.out.println("Printing in Centroids...");
+		// System.out.println("Printing Centroids...");
 		for (Object centroid : engdModelSim.lsoacentroids) {
-			LSOA l = (LSOA) centroid;
-			System.out.format("LSOA Name: " + l.getName() + " Ref Pop: " + l.getPopulation());
-			System.out.println("\n");
+			EngDCentroid l = (EngDCentroid) centroid;
+			// System.out.println(" LSOA: " + l.getName() + " -- Population: " +
+			// l.getPopulation());
+			// System.out.println("\n");
+
 		}
 	}
 
-	static void makeCentroids(GeomVectorField cities_vector, SparseGrid2D grid, Bag addTo,
-			Map<Integer, LSOA> cityList) {
-		System.out.println("Making Centroids...");
-		Bag cities = cities_vector.getGeometries();
-		Envelope e = cities_vector.getMBR();
+	static void makeCentroids(GeomVectorField centroids_vector, SparseGrid2D grid, Bag addTo,
+			Map<Integer, EngDCentroid> centroidList) {
+		System.out.println("Creating Centroids...");
+		Bag centroids = centroids_vector.getGeometries();
+		Envelope e = centroids_vector.getMBR();
 		double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
 		int xcols = engdModelSim.world_width - 1, ycols = engdModelSim.world_height - 1;
-		for (int i = 0; i < cities.size(); i++) {
-			MasonGeometry cityinfo = (MasonGeometry) cities.objs[i];
-			Point point = cities_vector.getGeometryLocation(cityinfo);
+		for (int i = 0; i < centroids.size(); i++) {
+			MasonGeometry centroidsinfo = (MasonGeometry) centroids.objs[i];
+			Point point = centroids_vector.getGeometryLocation(centroidsinfo);
 			double x = point.getX(), y = point.getY();
 			int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)),
 					yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin)));
-			String name = cityinfo.getStringAttribute("lsoacdstri");
-			int ID = cityinfo.getIntegerAttribute("lsoaID");
-			int pop = cityinfo.getIntegerAttribute("POP");
+			String name = centroidsinfo.getStringAttribute("lsoacdstri");
+			int ID = centroidsinfo.getIntegerAttribute("lsoaID");
+			int pop = centroidsinfo.getIntegerAttribute("POP");
 			Int2D location = new Int2D(xint, yint);
 
-			LSOA city = new LSOA(location, ID, name, pop);
-			addTo.add(city);
-			cityList.put(ID, city);
-			grid.setObjectLocation(city, location);
+			EngDCentroid engdcentroid = new EngDCentroid(location, ID, name, pop);
+			addTo.add(engdcentroid);
+			centroidList.put(ID, engdcentroid);
+			grid.setObjectLocation(engdcentroid, location);
 		}
+		printCentroids();
 	}
 
 	static void readInShapefile(String[] files, Bag[] attfiles, GeomVectorField[] vectorFields,
@@ -199,7 +215,7 @@ class EngDModelBuilder {
 				Bag attributes = attfiles[i];
 				String filePath = files[i];
 				File file = new File(filePath);
-				System.out.println(" " + filePath);
+				// System.out.println(" " + filePath);
 				URL shapeURI = file.toURI().toURL();
 				ShapeFileImporter.read(shapeURI, vectorFields[i], attributes);
 			}
@@ -210,29 +226,26 @@ class EngDModelBuilder {
 		}
 	}
 
-	static void readInRoadCost() {
-		try {
-			engdModelSim.road_cost = new DoubleGrid2D(engdModelSim.world_width, engdModelSim.world_height);
-
-			// FileInputStream fileInputStream = new FileInputStream(new
-			// File(Parameters.ROADS_COST_PATH));
-			DataInputStream dataInputStream = new DataInputStream(
-					EbolaData.class.getResourceAsStream(Parameters.ROADS_COST_PATH));
-
-			for (int i = 0; i < engdModelSim.world_width; i++)
-				for (int j = 0; j < engdModelSim.world_height; j++)
-					engdModelSim.road_cost.set(i, j, dataInputStream.readDouble());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
+	/*
+	 * static void readInRoadCost() { try { engdModelSim.road_cost = new
+	 * DoubleGrid2D(engdModelSim.world_width, engdModelSim.world_height);
+	 * 
+	 * // FileInputStream fileInputStream = new FileInputStream(new //
+	 * File(Parameters.ROADS_COST_PATH)); DataInputStream dataInputStream = new
+	 * DataInputStream(
+	 * EbolaData.class.getResourceAsStream(Parameters.ROADS_COST_PATH));
+	 * 
+	 * for (int i = 0; i < engdModelSim.world_width; i++) for (int j = 0; j <
+	 * engdModelSim.world_height; j++) engdModelSim.road_cost.set(i, j,
+	 * dataInputStream.readDouble()); } catch (FileNotFoundException e) {
+	 * e.printStackTrace(); } catch (IOException e) { e.printStackTrace(); }
+	 * 
+	 * }
+	 */
 
 	private static void createNetwork() {
-		System.out.println("Creating road network...");
 		System.out.println();
+		System.out.println("Creating road network...");
 		network.createFromGeomField(engdModelSim.roads);
 
 		for (Object o : network.getEdges()) {
@@ -245,93 +258,6 @@ class EngDModelBuilder {
 
 		addIntersectionNodes(network.nodeIterator(), junctions);
 	}
-
-	private static void createNGOAgents() {
-		System.out.println("Creating NGO Agents...");
-		for (Object c : engdModelSim.lsoacentroids) {
-			LSOA lsoa = (LSOA) c;
-			if (lsoa.getID() == 1) {
-				int currentPop = 0;
-				int maximumPop = EngDParameters.TOTAL_POP;
-				while (currentPop <= maximumPop) {
-					NGOTeam n = createNGOTeam(lsoa);
-					System.out.println(n.getTeam().size());
-					engdModelSim.agentTeams.add(n);
-					for (Object o : n.getTeam()) {
-						EngDAgent agent = (EngDAgent) o;
-						currentPop++;
-						lsoa.addMember(agent);
-						engdModelSim.agents.add(agent);
-						Int2D loc = lsoa.getLocation();
-						double y_coord = (loc.y * EngDParameters.WORLD_TO_POP_SCALE)
-								+ (int) (engdModelSim.random.nextDouble() * EngDParameters.WORLD_TO_POP_SCALE);
-						double x_coord = (loc.x * EngDParameters.WORLD_TO_POP_SCALE)
-								+ (int) (engdModelSim.random.nextDouble() * EngDParameters.WORLD_TO_POP_SCALE);
-						engdModelSim.world.setObjectLocation(agent, new Double2D(x_coord, y_coord));
-						int y_coordint = loc.y + (int) ((engdModelSim.random.nextDouble() - 0.5) * 3);
-						int x_coordint = loc.x + (int) ((engdModelSim.random.nextDouble() - 0.5) * 3);
-						engdModelSim.total_pop++;
-					}
-					engdModelSim.schedule.scheduleRepeating(n);
-				}
-				/*
-				 * int lsoapop = (int) Math.round(pop_dist.get(lsoa.getID()) *
-				 * EngDParameters.TOTAL_POP); System.out.println(lsoa.getName() + ": " +
-				 * lsoapop); while (currentPop <= lsoapop) { EngDNGO n = createNGOTeam(lsoa);
-				 * System.out.println(n.getTeam().size()); engdModelSim.ngoTeams.add(n); for
-				 * (Object o : n.getTeam()) { EngDAgent agent = (EngDAgent) o; currentPop++;
-				 * lsoa.addMember(agent); engdModelSim.agents.add(agent); Int2D loc =
-				 * lsoa.getLocation(); double y_coord = (loc.y *
-				 * EngDParameters.WORLD_TO_POP_SCALE) + (int) (engdModelSim.random.nextDouble()
-				 * * EngDParameters.WORLD_TO_POP_SCALE); double x_coord = (loc.x *
-				 * EngDParameters.WORLD_TO_POP_SCALE) + (int) (engdModelSim.random.nextDouble()
-				 * * EngDParameters.WORLD_TO_POP_SCALE);
-				 * engdModelSim.world.setObjectLocation(agent, new Double2D(x_coord, y_coord));
-				 * int y_coordint = loc.y + (int) ((engdModelSim.random.nextDouble() - 0.5) *
-				 * 3); int x_coordint = loc.x + (int) ((engdModelSim.random.nextDouble() - 0.5)
-				 * * 3); engdModelSim.total_pop++; } engdModelSim.schedule.scheduleRepeating(n);
-				 * }
-				 */
-			}
-		}
-
-	}
-
-	private static NGOTeam createNGOTeam(LSOA lsoa) {
-		System.out.println("Creating NGO Teams...");
-		int teamSize = pickTeamSize();
-		double stockStatus = pick_stock_status(stock_dist, lsoa.getID()) * teamSize;
-
-		NGOTeam ngoTeam = new NGOTeam(lsoa.getLocation(), teamSize, lsoa);
-		// EngDNGO ngoTeam = new EngDNGO(lsoa.getLocation(), teamSize, lsoa,
-		// stockStatus);
-		for (int i = 0; i < teamSize; i++) {
-			int sex;
-			if (engdModelSim.random.nextBoolean())
-				sex = EngDConstants.MALE;
-			else
-				sex = EngDConstants.FEMALE;
-			EngDAgent agent = new EngDAgent(sex, ngoTeam);
-			ngoTeam.getTeam().add(agent);
-		}
-		return ngoTeam;
-
-	}
-
-	/*
-	 * private static void setUpPopDist(String pop_dist_file) { try { // buffer
-	 * reader for age distribution data CSVReader csvReader = new CSVReader(new
-	 * FileReader(new File(pop_dist_file))); // csvReader.readLine();// skip the
-	 * headers List<String> line = csvReader.readLine(); while (!line.isEmpty()) {
-	 * // read in the county ids int lsoa_id =
-	 * NumberFormat.getNumberInstance(java.util.Locale.US).parse(line.get(0)).
-	 * intValue(); // relevant info is from 5 - 21 double percentage =
-	 * Double.parseDouble(line.get(1)); pop_dist.put(lsoa_id, percentage); line =
-	 * csvReader.readLine(); } System.out.println(pop_dist); } catch
-	 * (FileNotFoundException e) { e.printStackTrace(); } catch (IOException e) {
-	 * e.printStackTrace(); } catch (java.text.ParseException e) {
-	 * e.printStackTrace(); } }
-	 */
 
 	private static void setUpStockDist(String stock_dist_file) {
 		try {
@@ -362,11 +288,129 @@ class EngDModelBuilder {
 		return nd.sample();
 
 	}
+	/*
+	 * public static ArrayList<String> setUpAgentGoals(String agentfilename) throws
+	 * IOException{ String csvGoal = null; BufferedReader agentGoalsBuffer = null;
+	 * 
+	 * String agentFilePath =
+	 * EngDModelBuilder.class.getResource(agentfilename).getPath(); FileInputStream
+	 * agentfstream = new FileInputStream(agentFilePath);
+	 * System.out.println("Reading Agent's Goals CSV file: " +agentFilePath);
+	 * 
+	 * try { agentGoalsBuffer = new BufferedReader (new
+	 * InputStreamReader(agentfstream)); agentGoalsBuffer.readLine(); while
+	 * ((csvGoal = agentGoalsBuffer.readLine()) != null) { String[] splitted =
+	 * csvGoal.split(",");
+	 * 
+	 * ArrayList<String> agentGoalsResult = new ArrayList<String>(splitted.length);
+	 * for (String data : splitted) agentGoalsResult.add(data);
+	 * csvData.addAll(agentGoalsResult); } System.out.println("Full csvData Array: "
+	 * +csvData);
+	 * 
+	 * } finally { if (agentGoalsBuffer != null) agentGoalsBuffer.close(); } return
+	 * csvData; }
+	 */
 
+	// Move to NewNGOTeam.java?
 	private static int pickTeamSize() {
-		int teamSize = EngDParameters.TEAM_SIZE;
-		// int teamSize = (int) Math.round(nd.sample());
+		// pick random number between 1 and TEAM_SIZE
+		Random r = new Random();
+		int minTeam = 1;
+		int maxTeam = EngDParameters.TEAM_SIZE;
+		int teamSize = r.nextInt(maxTeam - minTeam) + minTeam;
 		return teamSize;
+	}
+
+	static void createNewNGOAgents() {
+		// For each NGO Team created - createNewNGOTeam()
+		// Assign each team a teamSize at random - pickTeamSize()
+		// Create a new NGO Agent for each member of the teamSize
+		// Assign each NGO Agent Sex, Speed, Capacity etc
+		System.out.println("Creating NEW NGO Agents...");
+		int workTract = 32236; // ROAD_ID_1 = 32236; objectid = 22495
+		int homeTract = 23133; // ROAD_ID_1 = 23133; objectid = 22285
+		int sex = 0;
+		for (int i = 0; i < numAgents; i++) {
+			EngDAgent newagent = new EngDAgent(i, null);
+			engdModelSim.agents.add(newagent);
+			MasonGeometry newGeometry = newagent.getLocation();
+			System.out.println("EngDAgent: " + newagent);
+			//newGeometry.isMovable = true;
+			//agents.addGeometry(newGeometry);
+			agentList.add(newagent);
+			engdModelSim.schedule.scheduleRepeating(newagent);
+		}
+	}
+
+	private static void createNewNGOTeam() {
+		System.out.println("Creating NEW NGO Teams...");
+		// Iterate through NUM_TEAMS
+		// And create a NewNGOTeam each time
+		// Give each team a number
+		// pickTeamSize() to assign a teamSize to the newly created Team
+
+		for (int i = 0; i < EngDParameters.NUM_TEAMS; i++) {
+			NewNGOTeam newngoteam = new NewNGOTeam(null, i, null);
+			pickTeamSize();
+			// schedule.scheduleRepeating(newngoteam);
+		}
+
+	}
+
+	private static void createNGOAgents() {
+		System.out.println("Creating NGO Agents...");
+		for (Object c : engdModelSim.lsoacentroids) {
+			EngDCentroid centroid = (EngDCentroid) c;
+			if (centroid.getID() == 1032936) { // == 'Equal to'
+				int currentPop = 0;
+				int maximumPop = EngDParameters.TOTAL_POP;
+				System.out.println("Total Number of NGO Agents: " + EngDParameters.TOTAL_POP);
+				while (currentPop <= maximumPop) {
+					NGOTeam n = createNGOTeam(centroid);
+					System.out.println("NGO Team Size: " + n.getTeam().size());
+					System.out.println(n.getTeam().size());
+					engdModelSim.agentTeams.add(n);
+					for (Object o : n.getTeam()) {
+						EngDAgent agent = (EngDAgent) o;
+						currentPop++;
+						centroid.addMember(agent);
+						engdModelSim.agents.add(agent);
+						Int2D loc = centroid.getLocation();
+						double y_coord = (loc.y * EngDParameters.WORLD_TO_POP_SCALE)
+								+ (int) (engdModelSim.random.nextDouble() * EngDParameters.WORLD_TO_POP_SCALE);
+						double x_coord = (loc.x * EngDParameters.WORLD_TO_POP_SCALE)
+								+ (int) (engdModelSim.random.nextDouble() * EngDParameters.WORLD_TO_POP_SCALE);
+						engdModelSim.world.setObjectLocation(agent, new Double2D(x_coord, y_coord));
+						int y_coordint = loc.y + (int) ((engdModelSim.random.nextDouble() - 0.5) * 3);
+						int x_coordint = loc.x + (int) ((engdModelSim.random.nextDouble() - 0.5) * 3);
+						engdModelSim.total_pop++;
+					}
+					engdModelSim.schedule.scheduleRepeating(n);
+				}
+			}
+		}
+
+	}
+
+	private static NGOTeam createNGOTeam(EngDCentroid lsoa) {
+		System.out.println("Creating NGO Teams...");
+		int teamSize = pickTeamSize();
+		// double stockStatus = pick_stock_status(stock_dist, lsoa.getID()) * teamSize;
+
+		NGOTeam ngoTeam = new NGOTeam(lsoa.getLocation(), teamSize, lsoa);
+		// EngDNGO ngoTeam = new EngDNGO(lsoa.getLocation(), teamSize, lsoa,
+		// stockStatus);
+		for (int i = 0; i < teamSize; i++) {
+			int sex;
+			if (engdModelSim.random.nextBoolean())
+				sex = EngDConstants.MALE;
+			else
+				sex = EngDConstants.FEMALE;
+			EngDAgent agent = new EngDAgent(sex, null);
+			ngoTeam.getTeam().add(agent);
+		}
+		return ngoTeam;
+
 	}
 
 	private static void addIntersectionNodes(Iterator<?> nodeIterator, GeomVectorField intersections) {

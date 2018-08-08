@@ -25,12 +25,11 @@ class EngDModel extends SimState {
 	public static GeomVectorField roads;
 	public GeomVectorField flood2;
 	public GeomVectorField flood3;
-	public GeomVectorField cityPoints;
-	
+	public GeomVectorField centroidPoints;
 	//public GeomVectorField adminBoundaries;
 	//public GeomVectorField osvi;
 	//public SparseGrid2D allRoadNodes;
-	public DoubleGrid2D road_cost; //accumalated cost to get to nearest node on the road network
+	public DoubleGrid2D road_cost; //Accumulated cost to get to nearest node on the road network
 	
 	public int pop_width;
 	public int pop_height;
@@ -41,8 +40,10 @@ class EngDModel extends SimState {
 	
 	public Bag agents;
 	public Bag agentTeams;
+	public Bag newAgents;
 	public Bag lsoacentroids = new Bag();
-	public Map<Integer, LSOA> cityList = new HashMap<>();
+	public Map<Integer, EngDCentroid> cityList = new HashMap<>();
+	ArrayList<Polygon> polys = new ArrayList<Polygon>();
 	
 	public EngDModel(long seed) {
 		super(seed);
@@ -52,6 +53,9 @@ class EngDModel extends SimState {
 		super.start();
 		agents = new Bag();
 		agentTeams = new Bag();
+		newAgents = new Bag();
+		//Bag ps = lsoa.getGeometries();
+        //polys.addAll(ps);
 		EngDModelBuilder.initializeWorld(this);
 	}
 	

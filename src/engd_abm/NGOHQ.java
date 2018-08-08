@@ -2,7 +2,6 @@ package engd_abm;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-
 import sim.util.Int2D;
 
 class NGOHQ {
@@ -15,7 +14,7 @@ class NGOHQ {
 	private int ngoArrivals;
 
 	// need name, get name, set name
-	protected HashMap<NGOHQ, EngDRoute> cachedPaths;
+	protected HashMap<EngDCentroid, EngDRoute> cachedPaths;
 
 	public NGOHQ(Int2D ngolocation, int ngoid, int ngoquota, double ngoTeamPresence) {
 		this.ngoLocation = ngolocation;
@@ -84,5 +83,5 @@ class NGOHQ {
 		if (ngoagents.remove(r))
 			ngoDepartures ++;
 	}
-
+	
 }

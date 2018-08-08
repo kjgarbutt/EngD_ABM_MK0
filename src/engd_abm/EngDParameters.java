@@ -6,8 +6,8 @@ class EngDParameters {
 	public static double AVG_TEAM_SIZE = 6.3;
 	public static double TEAM_SIZE_SD = 2.92;
 	public static int TEAM_SIZE = 6;
-	
-	public static int TOTAL_POP = 14;
+	public static int NUM_TEAMS = 10;
+	public static int TOTAL_POP = 25;
 	
 	public static double DANGER_CARE_WEIGHT = 0.2;
 	public static double POP_CARE = 0.75;
@@ -49,10 +49,12 @@ class EngDParameters {
 	//public static String ROADS_COST_PATH = "data/road_cost.dat";//Path to cost distance data for all allRoadNodes in the network
 	//public static String CITY_SHP = "data/city.shp";
 	//public static String CITY_SHP = "data/Gloucestershire_Centroids_MultipartToSinglepart.shp";
-		
+	public static String AGENTS = "data/NGOAgents.csv";
 	public static String AGE_DIST = "data/age_dist2.csv";
 	public static String POP_DIST = "data/pop_dist.csv";
 	public static String FIN_DIST = "data/fin_dist.csv";
+	public static String STOCK_DIST = "data/stock_dist.csv";
+	public static String GOALS_CSV = "data/AgentGoals.csv";
 	
 	public static double convertToKilometers(double val) {
 		return (val * (EngDParameters.POP_BLOCK_METERS / EngDParameters.WORLD_TO_POP_SCALE)) / 1000.0;

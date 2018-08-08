@@ -47,7 +47,7 @@ public class EngDModelWithUI extends GUIState {
 		display.attach(flood2Portrayal, "Flood Zone #2");
 		display.attach(flood3Portrayal, "Flood Zone #3");
 		display.attach(centroidsPortrayal, "Centroids");
-		display.attach(agentsPortrayal, "Agents", true);
+		display.attach(agentsPortrayal, "Agents");
 
 		displayFrame = display.createFrame();
 		c.registerFrame(displayFrame);
@@ -71,7 +71,7 @@ public class EngDModelWithUI extends GUIState {
 		System.out.println("Setting up Fixed Portrayals...");
 
 		centroidsPortrayal.setField(((EngDModel) this.state).cityGrid);
-		centroidsPortrayal.setPortrayalForAll(new OvalPortrayal2D(Color.BLUE, true));
+		centroidsPortrayal.setPortrayalForAll(new OvalPortrayal2D(Color.GREEN, true));
 		
 		flood2Portrayal.setField(((EngDModel) this.state).flood2);
 		flood2Portrayal.setPortrayalForAll(new GeomPortrayal(Color.BLUE, true));
@@ -105,36 +105,31 @@ public class EngDModelWithUI extends GUIState {
 				@Override
 	            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
 	            {
-	                LSOA centroid = (LSOA)object;
+	                EngDCentroid centroid = (EngDCentroid)object;
 
 	                Rectangle2D.Double draw = info.draw;
 	                int agent_pop = centroid.getAgentPopulation();
-	              //  System.out.println("refugee_pop = " + refugee_pop);
-	                paint = new Color(122, 56, 255);
-	                Double scale = 1.0;
+	                paint = new Color(255, 255, 051);	//YELLOW
+	                Double scale = 5.0;
 	                if(agent_pop == 0) {
 	                	scale = 5.0;
-	              //  	paint = new Color(51, 102, 255);
+	                	paint = new Color(110, 94, 0);	//BROWN
 	                }
 	                else if(agent_pop > 0 && agent_pop <= EngDParameters.TOTAL_POP * 0.3) {
 	                	scale = 15.0;
-	                	//paint = new Color(112, 77, 255);
-	              //  	paint = new Color(163, 177, 255);
+	                	paint = new Color(255, 132, 255);	//PINK
+	                	//paint = new Color(163, 177, 255);
 	                }
 	                else if(agent_pop > EngDParameters.TOTAL_POP * 0.3 && agent_pop <= EngDParameters.TOTAL_POP*0.6){
 	                	scale = 25.0;
-	                	//paint = new Color(133, 102, 255);
-	             //   	paint = new Color(177, 138, 255);
+	                	paint = new Color(255, 123, 43);	//ORANGE
+	                	//paint = new Color(177, 138, 255);
 	                }
 	                else if(agent_pop > EngDParameters.TOTAL_POP*0.6){
 	                	scale = 40.0;
-	                	//paint = new Color(235, 138, 255);
-	              //  	paint = new Color(177, 138, 255);
+	                	paint = new Color(0, 218, 36);	//GREEN
+	                	//paint = new Color(177, 138, 255);
 	                }
-	                
-	                //paint = new Color(0, 128, 255);
-	                //paint = new Color(255, 154, 146);
-	                //paint = new Color(255, 137, 95);
 	                final double width = draw.width*scale + offset;
 	                final double height = draw.height*scale + offset;
 
@@ -157,26 +152,10 @@ public class EngDModelWithUI extends GUIState {
 		//agentsPortrayal.setField(EngDModelBuilder.agents);
 		//agentsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.MAGENTA,
 				//150, true));
-		
 		agentsPortrayal.setField(EngDModelBuilder.agents);
-		agentsPortrayal.setPortrayalForAll(new OvalPortrayal2D() {
-			@Override
-			public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
-
-				EngDAgent agent = (EngDAgent) object;
-				if (agent.getShiftStatus() == EngDConstants.DEAD)
-					paint = Color.RED;
-				// System.out.println(refugee);
-				else
-					paint = Color.GREEN;
-				//super.draw(object, graphics, info);
-				super.filled = true;
-				super.scale = 5;
-				super.draw(object, graphics, info);
-			}
-		});
-		
-		
+		//agentsPortrayal.setField(((EngDModel) this.state).world);
+		agentsPortrayal.setPortrayalForAll(new GeomPortrayal
+        		(Color.MAGENTA, 150, true));
 		display.reset();
 		display.setBackdrop(Color.WHITE);
 		display.repaint();
