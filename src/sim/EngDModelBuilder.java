@@ -332,6 +332,8 @@ public class EngDModelBuilder {
 			EngDAgent newagent = new EngDAgent();
 			engdModelSim.agents.add(newagent);
 			MasonGeometry newGeometry = newagent.getGeometry();
+			newGeometry.isMovable = true;
+			//agents.addGeometry(newGeometry);	//This breaks things. Why?
 			System.out.println("	EngDAgent: " + newagent);
 		}
 	}
