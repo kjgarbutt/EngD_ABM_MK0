@@ -1,4 +1,4 @@
-package engd_abm;
+package sim;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,8 +34,11 @@ import sim.engine.*;
 import sim.util.*;
 import sim.field.continuous.*;
 import net.sf.csv4j.CSVReader;
+import objects.EngDCentroid;
 import refugee.refugeeData.RefugeeData;
 import ec.util.MersenneTwisterFast;
+import entities.EngDAgent;
+import entities.NGOTeam;
 import sim.app.antsforage.Ant;
 import sim.app.flockers.Flocker;
 import sim.app.pacman.Blinky;
@@ -54,8 +57,10 @@ import sim.util.Int2D;
 import sim.util.geo.GeomPlanarGraph;
 import sim.util.geo.GeomPlanarGraphEdge;
 import sim.util.geo.MasonGeometry;
+import utilities.EngDConstants;
+import utilities.EngDParameters;
 
-class EngDModelBuilder {
+public class EngDModelBuilder {
 	public static EngDModel engdModelSim;
 	private static NormalDistribution nd = new NormalDistribution(EngDParameters.AVG_TEAM_SIZE,
 			EngDParameters.TEAM_SIZE_SD);
@@ -350,7 +355,7 @@ class EngDModelBuilder {
 		// pickTeamSize() to assign a teamSize to the newly created Team
 
 		for (int i = 0; i < EngDParameters.NUM_TEAMS; i++) {
-			NewNGOTeam newngoteam = new NewNGOTeam(null, i, null);
+			NGOTeam newngoteam = new NGOTeam(null, i, null);
 			pickTeamSize();
 			// schedule.scheduleRepeating(newngoteam);
 		}

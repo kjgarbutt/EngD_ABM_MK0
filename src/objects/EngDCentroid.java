@@ -1,13 +1,17 @@
-package engd_abm;
+package objects;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import entities.EngDAgent;
+import entities.NGOTeam;
 import sim.util.Int2D;
 import sim.util.geo.MasonGeometry;
+import utilities.EngDAStar;
+import utilities.EngDParameters;
 
-class EngDCentroid {
-	Int2D location;
+public class EngDCentroid {
+	public Int2D location;
 	String name;
 	private int quota; // 1
 	private int ID;

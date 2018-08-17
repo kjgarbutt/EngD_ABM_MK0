@@ -1,6 +1,6 @@
-package engd_abm;
+package utilities;
 
-class EngDParameters {
+public class EngDParameters {
 	
 	public static double TEMPORAL_RESOLUTION = 0.4;// steps per hour
 	public static double AVG_TEAM_SIZE = 6.3;

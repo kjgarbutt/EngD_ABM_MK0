@@ -1,9 +1,11 @@
-package engd_abm;
+package sim;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import objects.EngDCentroid;
+import objects.Polygon;
 import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.field.continuous.Continuous2D;
@@ -13,7 +15,7 @@ import sim.field.grid.SparseGrid2D;
 import sim.field.network.Network;
 import sim.util.Bag;
 
-class EngDModel extends SimState {
+public class EngDModel extends SimState {
 	
 	public Continuous2D world;
 	

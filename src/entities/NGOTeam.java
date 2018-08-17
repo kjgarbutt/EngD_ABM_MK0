@@ -1,11 +1,15 @@
-package engd_abm;
+package entities;
 
 import java.awt.Color;
 import ec.util.MersenneTwisterFast;
+import objects.EngDCentroid;
+import objects.EngDRoadInfo;
+import objects.EngDRoute;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import sim.EngDModel;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
@@ -14,6 +18,7 @@ import sim.util.Bag;
 import sim.util.Double2D;
 import sim.util.Int2D;
 import sim.util.geo.MasonGeometry;
+import utilities.EngDParameters;
 
 public class NGOTeam implements Steppable{
 	private Int2D location;

@@ -1,4 +1,4 @@
-package engd_abm;
+package utilities;
 
 public class EngDConstants {
     public static int MALE = 0;

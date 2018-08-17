@@ -1,4 +1,4 @@
-package engd_abm;
+package sim;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JFrame;
 
+import objects.EngDCentroid;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
@@ -17,6 +18,7 @@ import sim.portrayal.geo.GeomPortrayal;
 import sim.portrayal.geo.GeomVectorFieldPortrayal;
 import sim.portrayal.grid.SparseGridPortrayal2D;
 import sim.portrayal.simple.OvalPortrayal2D;
+import utilities.EngDParameters;
 
 public class EngDModelWithUI extends GUIState {
 	

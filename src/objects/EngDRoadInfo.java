@@ -1,6 +1,7 @@
-package engd_abm;
+package objects;
 
 import sim.util.Int2D;
+import utilities.EngDParameters;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.List;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-class EngDRoadInfo {
+public class EngDRoadInfo {
 	private Geometry path;// real-world path geometry
 	private int from; // from City ID
 	private int to; // to City ID

@@ -1,4 +1,4 @@
-package engd_abm;
+package entities;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -7,7 +7,7 @@ import sim.util.Int2D;
 import sim.util.geo.GeomPlanarGraphEdge;
 import sim.util.geo.MasonGeometry;
 
-class EngDAgent implements Steppable {
+public class EngDAgent implements Steppable {
 	private int sex; // 0 male, 1 female
 	private NGOTeam team;
 	private MasonGeometry location;

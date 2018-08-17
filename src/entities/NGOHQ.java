@@ -1,7 +1,10 @@
-package engd_abm;
+package entities;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import objects.EngDCentroid;
+import objects.EngDRoute;
 import sim.util.Int2D;
 
 class NGOHQ {
