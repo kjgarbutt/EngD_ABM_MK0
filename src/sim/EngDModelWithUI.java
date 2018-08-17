@@ -21,13 +21,13 @@ import sim.portrayal.simple.OvalPortrayal2D;
 import utilities.EngDParameters;
 
 public class EngDModelWithUI extends GUIState {
-	
+
 	public Display2D display;
 	public JFrame displayFrame;
 
 	GeomVectorFieldPortrayal osviPortrayal = new GeomVectorFieldPortrayal();
 	GeomVectorFieldPortrayal boundaryPortrayal = new GeomVectorFieldPortrayal();
-	//GeomVectorFieldPortrayal centroidsPortrayal = new GeomVectorFieldPortrayal();
+	// GeomVectorFieldPortrayal centroidsPortrayal = new GeomVectorFieldPortrayal();
 	FieldPortrayal2D centroidsPortrayal = new SparseGridPortrayal2D();
 	GeomVectorFieldPortrayal roadsPortrayal = new GeomVectorFieldPortrayal();
 	GeomVectorFieldPortrayal flood3Portrayal = new GeomVectorFieldPortrayal();
@@ -43,11 +43,11 @@ public class EngDModelWithUI extends GUIState {
 		super.init(c);
 		display = new Display2D(750, 520, this);
 
-		display.attach(boundaryPortrayal, "Boundary");
-		display.attach(osviPortrayal, "OSVI");
+		//display.attach(boundaryPortrayal, "Boundary");
+		//display.attach(osviPortrayal, "OSVI");
 		display.attach(roadsPortrayal, "Roads");
-		display.attach(flood2Portrayal, "Flood Zone #2");
-		display.attach(flood3Portrayal, "Flood Zone #3");
+		//display.attach(flood2Portrayal, "Flood Zone #2");
+		//display.attach(flood3Portrayal, "Flood Zone #3");
 		display.attach(centroidsPortrayal, "Centroids");
 		display.attach(agentsPortrayal, "Agents");
 
@@ -63,24 +63,23 @@ public class EngDModelWithUI extends GUIState {
 	public void start() {
 		super.start();
 		setupFixedPortrayals();
-		setupMovingPortrayals();
+		// setupMovingPortrayals();
 
 		EngDModel engdModelSim = (EngDModel) state;
 
 	}
 
 	public void setupFixedPortrayals() {
-		System.out.println("Setting up Fixed Portrayals...");
+		System.out.println("Setting up Portrayals...");
 
 		centroidsPortrayal.setField(((EngDModel) this.state).cityGrid);
-		centroidsPortrayal.setPortrayalForAll(new OvalPortrayal2D(Color.GREEN, true));
-		
+		centroidsPortrayal.setPortrayalForAll(new OvalPortrayal2D(Color.GREEN, 2, true));
+
 		flood2Portrayal.setField(((EngDModel) this.state).flood2);
 		flood2Portrayal.setPortrayalForAll(new GeomPortrayal(Color.BLUE, true));
-		
-		roadsPortrayal.setField(((EngDModel) this.state).roads);
-		roadsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.DARK_GRAY,
-				0.0005, false));
+
+		roadsPortrayal.setField(EngDModel.roads);
+		roadsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.BLACK, 0.0005, false));
 
 		flood2Portrayal.setField(((EngDModel) this.state).flood2);
 		flood2Portrayal.setPortrayalForAll(new GeomPortrayal(Color.BLUE, true));
@@ -89,75 +88,70 @@ public class EngDModelWithUI extends GUIState {
 		flood3Portrayal.setPortrayalForAll(new GeomPortrayal(Color.CYAN, true));
 
 		osviPortrayal.setField(((EngDModel) this.state).lsoa);
-		osviPortrayal.setPortrayalForAll(new GeomPortrayal(Color.PINK,
-				true));
-		
+		osviPortrayal.setPortrayalForAll(new GeomPortrayal(Color.PINK, true));
+
 		boundaryPortrayal.setField(((EngDModel) this.state).boundary);
-		boundaryPortrayal.setPortrayalForAll(new GeomPortrayal(Color.YELLOW,
-				true));
+		boundaryPortrayal.setPortrayalForAll(new GeomPortrayal(Color.YELLOW, true));
+
+		agentsPortrayal.setField(EngDModelBuilder.agents);
+		agentsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.MAGENTA, 150, true));
 
 	}
-	
+
 	public void setupMovingPortrayals() {
 		System.out.println("Setting up Moving Portrayals...");
 		centroidsPortrayal.setPortrayalForAll(new OvalPortrayal2D() {
 
 			private static final long serialVersionUID = 546102092597315413L;
 
-				@Override
-	            public void draw(Object object, Graphics2D graphics, DrawInfo2D info)
-	            {
-	                EngDCentroid centroid = (EngDCentroid)object;
+			@Override
+			public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
+				EngDCentroid centroid = (EngDCentroid) object;
 
-	                Rectangle2D.Double draw = info.draw;
-	                int agent_pop = centroid.getAgentPopulation();
-	                paint = new Color(255, 255, 051);	//YELLOW
-	                Double scale = 5.0;
-	                if(agent_pop == 0) {
-	                	scale = 5.0;
-	                	paint = new Color(110, 94, 0);	//BROWN
-	                }
-	                else if(agent_pop > 0 && agent_pop <= EngDParameters.TOTAL_POP * 0.3) {
-	                	scale = 15.0;
-	                	paint = new Color(255, 132, 255);	//PINK
-	                	//paint = new Color(163, 177, 255);
-	                }
-	                else if(agent_pop > EngDParameters.TOTAL_POP * 0.3 && agent_pop <= EngDParameters.TOTAL_POP*0.6){
-	                	scale = 25.0;
-	                	paint = new Color(255, 123, 43);	//ORANGE
-	                	//paint = new Color(177, 138, 255);
-	                }
-	                else if(agent_pop > EngDParameters.TOTAL_POP*0.6){
-	                	scale = 40.0;
-	                	paint = new Color(0, 218, 36);	//GREEN
-	                	//paint = new Color(177, 138, 255);
-	                }
-	                final double width = draw.width*scale + offset;
-	                final double height = draw.height*scale + offset;
+				Rectangle2D.Double draw = info.draw;
+				int agent_pop = centroid.getAgentPopulation();
+				paint = new Color(255, 255, 051); // YELLOW
+				Double scale = 5.0;
+				if (agent_pop == 0) {
+					scale = 5.0;
+					paint = new Color(110, 94, 0); // BROWN
+				} else if (agent_pop > 0 && agent_pop <= EngDParameters.TOTAL_POP * 0.3) {
+					scale = 15.0;
+					paint = new Color(255, 132, 255); // PINK
+					// paint = new Color(163, 177, 255);
+				} else if (agent_pop > EngDParameters.TOTAL_POP * 0.3 && agent_pop <= EngDParameters.TOTAL_POP * 0.6) {
+					scale = 25.0;
+					paint = new Color(255, 123, 43); // ORANGE
+					// paint = new Color(177, 138, 255);
+				} else if (agent_pop > EngDParameters.TOTAL_POP * 0.6) {
+					scale = 40.0;
+					paint = new Color(0, 218, 36); // GREEN
+					// paint = new Color(177, 138, 255);
+				}
+				final double width = draw.width * scale + offset;
+				final double height = draw.height * scale + offset;
 
-	                graphics.setPaint(paint);
-	                final int x = (int)(draw.x - width / 2.0);
-	                final int y = (int)(draw.y - height / 2.0);
-	                int w = (int)(width);
-	                int h = (int)(height);
-	                        
-	                // draw centered on the origin
-	                if (filled)
-	                    graphics.fillOval(x,y,w,h);
-	                else
-	                    graphics.drawOval(x,y,w,h);
+				graphics.setPaint(paint);
+				final int x = (int) (draw.x - width / 2.0);
+				final int y = (int) (draw.y - height / 2.0);
+				int w = (int) (width);
+				int h = (int) (height);
 
-	            }
-	        });
-	  
-		
-		//agentsPortrayal.setField(EngDModelBuilder.agents);
-		//agentsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.MAGENTA,
-				//150, true));
+				// draw centered on the origin
+				if (filled)
+					graphics.fillOval(x, y, w, h);
+				else
+					graphics.drawOval(x, y, w, h);
+
+			}
+		});
+
+		// agentsPortrayal.setField(EngDModelBuilder.agents);
+		// agentsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.MAGENTA,
+		// 150, true));
 		agentsPortrayal.setField(EngDModelBuilder.agents);
-		//agentsPortrayal.setField(((EngDModel) this.state).world);
-		agentsPortrayal.setPortrayalForAll(new GeomPortrayal
-        		(Color.MAGENTA, 150, true));
+		// agentsPortrayal.setField(((EngDModel) this.state).world);
+		agentsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.MAGENTA, 150, true));
 		display.reset();
 		display.setBackdrop(Color.WHITE);
 		display.repaint();
@@ -176,8 +170,7 @@ public class EngDModelWithUI extends GUIState {
 	}
 
 	public static void main(String[] args) {
-		EngDModelWithUI ebUI = new EngDModelWithUI(new EngDModel(
-				System.currentTimeMillis()));
+		EngDModelWithUI ebUI = new EngDModelWithUI(new EngDModel(System.currentTimeMillis()));
 		Console c = new Console(ebUI);
 		c.setVisible(true);
 	}

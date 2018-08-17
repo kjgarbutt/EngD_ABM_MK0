@@ -66,6 +66,7 @@ public class EngDModelBuilder {
 			EngDParameters.TEAM_SIZE_SD);
 	private static HashMap<Integer, Double> pop_dist;
 	private static HashMap<Integer, NormalDistribution> stock_dist;
+	public GeomVectorField roads = new GeomVectorField();
 	public static GeomPlanarGraph network = new GeomPlanarGraph();
 	public static GeomVectorField junctions = new GeomVectorField();
 	public static HashMap<Integer, GeomPlanarGraphEdge> idsToEdges = new HashMap<Integer, GeomPlanarGraphEdge>();
@@ -88,11 +89,11 @@ public class EngDModelBuilder {
 		String[] boundaryAttributes = { "NAME", "AREA_CODE", "DESCRIPTIO", "FILE_NAME", "NUMBER", "NUMBER0",
 				"POLYGON_ID", "UNIT_ID", "CODE", "HECTARES", "AREA", "TYPE_CODE", "DESCRIPT0", "TYPE_COD0",
 				"DESCRIPT1" };
-		String[] centroidAttributes = { "objectid", "lsoa11cd", "lsoa11nm", "NAME", "AREA_CODE", "DESCRIPTIO", "FILE_NAME",
-				"NUMBER", "NUMBER0", "POLYGON_ID", "UNIT_ID", "CODE", "HECTARES", "AREA", "TYPE_CODE", "DESCRIPT0",
-				"TYPE_COD0", "DESCRIPT1", "OID_", "GOR_NAME", "GOR_CODE", "LTA_NAME", "MSOA_NAME", "MSOA_CODE",
-				"LA_NAME", "LA_CODE", "LSOA_NAME", "LSOA_CODE", "Name_1", "ALL_RES_C", "MALES_C", "MALES_P", "FEM_C",
-				"FEM", "ALL_PPL_C", "lsoaID", "POP", "ORIG_FID", "lsoaname", "lsoacdstri" };
+		String[] centroidAttributes = { "objectid", "lsoa11cd", "lsoa11nm", "NAME", "AREA_CODE", "DESCRIPTIO",
+				"FILE_NAME", "NUMBER", "NUMBER0", "POLYGON_ID", "UNIT_ID", "CODE", "HECTARES", "AREA", "TYPE_CODE",
+				"DESCRIPT0", "TYPE_COD0", "DESCRIPT1", "OID_", "GOR_NAME", "GOR_CODE", "LTA_NAME", "MSOA_NAME",
+				"MSOA_CODE", "LA_NAME", "LA_CODE", "LSOA_NAME", "LSOA_CODE", "Name_1", "ALL_RES_C", "MALES_C",
+				"MALES_P", "FEM_C", "FEM", "ALL_PPL_C", "lsoaID", "POP", "ORIG_FID", "lsoaname", "lsoacdstri" };
 		String[] lsoaAttributes = { "ID", "OBJECTID", "LSOA_CODE", "LSOA_NAME", "LA_CODE", "LA_NAME", "MSOA_CODE",
 				"MSOA_NAME", "GOR_NAME", "GOR_CODE", "GLOUCEST_1", "CFSL", "PRIOL", "L_GL_OSVI_", "RankColL",
 				"RankNumL", "L_OSVI_Adj", "RankColAdj", "RankNumAdj", "PRION", "CFSN", "N_GL_OSV_1", "RankColN",
@@ -251,13 +252,12 @@ public class EngDModelBuilder {
 	private static void createNetwork() {
 		System.out.println();
 		System.out.println("Creating road network...");
-		network.createFromGeomField(engdModelSim.roads);
+		network.createFromGeomField(EngDModel.roads);
 
 		for (Object o : network.getEdges()) {
 			GeomPlanarGraphEdge e = (GeomPlanarGraphEdge) o;
 
 			idsToEdges.put(e.getIntegerAttribute("ROAD_ID_1").intValue(), e);
-
 			e.setData(new ArrayList<EngDAgent>());
 		}
 
@@ -327,23 +327,12 @@ public class EngDModelBuilder {
 	}
 
 	static void createNewNGOAgents() {
-		// For each NGO Team created - createNewNGOTeam()
-		// Assign each team a teamSize at random - pickTeamSize()
-		// Create a new NGO Agent for each member of the teamSize
-		// Assign each NGO Agent Sex, Speed, Capacity etc
 		System.out.println("Creating NEW NGO Agents...");
-		int workTract = 32236; // ROAD_ID_1 = 32236; objectid = 22495
-		int homeTract = 23133; // ROAD_ID_1 = 23133; objectid = 22285
-		int sex = 0;
 		for (int i = 0; i < numAgents; i++) {
-			EngDAgent newagent = new EngDAgent(i, null);
+			EngDAgent newagent = new EngDAgent();
 			engdModelSim.agents.add(newagent);
-			MasonGeometry newGeometry = newagent.getLocation();
-			System.out.println("EngDAgent: " + newagent);
-			//newGeometry.isMovable = true;
-			//agents.addGeometry(newGeometry);
-			agentList.add(newagent);
-			engdModelSim.schedule.scheduleRepeating(newagent);
+			MasonGeometry newGeometry = newagent.getGeometry();
+			System.out.println("	EngDAgent: " + newagent);
 		}
 	}
 
@@ -411,7 +400,7 @@ public class EngDModelBuilder {
 				sex = EngDConstants.MALE;
 			else
 				sex = EngDConstants.FEMALE;
-			EngDAgent agent = new EngDAgent(sex, null);
+			EngDAgent agent = new EngDAgent();
 			ngoTeam.getTeam().add(agent);
 		}
 		return ngoTeam;
@@ -422,7 +411,6 @@ public class EngDModelBuilder {
 		GeometryFactory fact = new GeometryFactory();
 		Coordinate coord = null;
 		Point point = null;
-		@SuppressWarnings("unused")
 		int counter = 0;
 
 		while (nodeIterator.hasNext()) {
