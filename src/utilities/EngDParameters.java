@@ -37,12 +37,13 @@ public class EngDParameters {
 	public static double WORLD_DISCRETIZTION = 0.1;// discretization or buckets
 													// for world granularity
 
-	public static double WALKING_SPEED = 5.1;// km per hour
+	public static double WALKING_SPEED = 5.1;// km per hour?
 	
 	public static String LSOA_SHP = "data/GloucestershireFinal_LSOA.shp";
+	public static String OSVI_SHP = "data/GloucestershireFinal_OSVI.shp";
 	public static String BOUNDARY_SHP = "data/Gloucestershire_Boundary.shp";
-	public static String CENTROIDS_SHP = "data/Gloucestershire_Centroids_Singlepart.shp";
-	public static String ROAD_SHP = "data/GL_ITN.shp";
+	public static String CENTROIDS_SHP = "data/Gloucestershire_Centroids_MultipartToSinglepart.shp";
+	public static String ROAD_SHP = "data/GL_ITN_MultipartToSinglepart.shp";
 	public static String FLOOD2_SHP = "data/Gloucestershire_FZ_2.shp";
 	public static String FLOOD3_SHP = "data/Gloucestershire_FZ_3.shp";
 	//public static String ROADLINK_SHP = "data/GL_ITN_MultipartToSinglepart.shp";
